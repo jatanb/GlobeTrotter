@@ -1,4 +1,5 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Map } from "lucide-react";
 
@@ -140,6 +141,15 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
               />
+
+              <div className="mt-2 text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-semibold text-slate-700 hover:text-slate-950 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
 

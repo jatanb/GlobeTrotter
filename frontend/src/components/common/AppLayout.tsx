@@ -1,9 +1,11 @@
-import { Map, Plus, Plane, Compass } from "lucide-react";
+import { Map, Plus, Plane, Compass, Search, Wallet, CalendarDays, UserRound, ShieldCheck } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 
 export default function AppLayout() {
   const location = useLocation();
+  const storedUser = localStorage.getItem("globetrotter_user");
+  const isAdmin = storedUser ? (JSON.parse(storedUser) as { is_admin?: boolean }).is_admin : false;
 
   const navigation = [
     {
@@ -15,6 +17,21 @@ export default function AppLayout() {
       label: "My Trips",
       path: "/trips",
       icon: Plane,
+    },
+    {
+      label: "Discover",
+      path: "/discover/cities",
+      icon: Search,
+    },
+    {
+      label: "Budget",
+      path: "/budget",
+      icon: Wallet,
+    },
+    {
+      label: "Calendar",
+      path: "/calendar",
+      icon: CalendarDays,
     },
   ];
 
@@ -82,6 +99,11 @@ export default function AppLayout() {
               Plan New Trip
             </span>
           </Link>
+
+          <Link to="/profile" aria-label="Open profile settings" className="ml-2 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950">
+            <UserRound size={19} />
+          </Link>
+          {isAdmin && <Link to="/admin" aria-label="Open admin dashboard" className="ml-1 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950"><ShieldCheck size={19} /></Link>}
 
         </div>
 
