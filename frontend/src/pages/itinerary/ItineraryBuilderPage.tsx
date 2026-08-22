@@ -9,16 +9,30 @@ interface Stop {
   startDate: string;
   endDate: string;
   activities: string[];
+  cityCost?: number;
 }
 
 interface SavedTrip {
   id: string;
   name: string;
+  fromPlace?: string;
+  toPlace?: string;
   startDate: string;
   endDate: string;
 }
 
 const cities = ["Mumbai", "Bengaluru", "Jaipur", "Kochi", "Munnar", "Varanasi", "Udaipur", "Shillong", "Guwahati"];
+const cityCosts: Record<string, number> = { Mumbai: 3000, Bengaluru: 2000, Jaipur: 2000, Kochi: 1000, Munnar: 1000, Varanasi: 1000, Udaipur: 2000, Shillong: 1000, Guwahati: 1000 };
+
+interface GeocodedPlace { lat: string; lon: string; }
+
+async function geocode(place: string) {
+  const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(place)}`);
+  if (!response.ok) throw new Error("Unable to find that place.");
+  const results = await response.json() as GeocodedPlace[];
+  if (!results[0]) throw new Error(`Could not find ${place}.`);
+  return results[0];
+}
 
 function createStop(startDate: string, endDate: string): Stop {
   return { id: crypto.randomUUID(), city: "Mumbai", startDate, endDate, activities: [] };
@@ -33,9 +47,12 @@ export default function ItineraryBuilderPage() {
   const [stops, setStops] = useState<Stop[]>(initialStops || (trip ? [createStop(trip.startDate, trip.endDate)] : []));
   const [activityDrafts, setActivityDrafts] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeMessage, setRouteMessage] = useState("");
+  const availableCities = Array.from(new Set([...cities, ...stops.map((stop) => stop.city)]));
 
   function updateStop(id: string, field: "city" | "startDate" | "endDate", value: string) {
-    setStops((currentStops) => currentStops.map((stop) => stop.id === id ? { ...stop, [field]: value } : stop));
+    setStops((currentStops) => currentStops.map((stop) => stop.id === id ? { ...stop, [field]: value, ...(field === "city" ? { cityCost: cityCosts[value] || 0 } : {}) } : stop));
     setSaved(false);
   }
 
@@ -43,6 +60,48 @@ export default function ItineraryBuilderPage() {
     const lastStop = stops[stops.length - 1];
     setStops((currentStops) => [...currentStops, createStop(lastStop?.startDate || trip?.startDate || "", lastStop?.endDate || trip?.endDate || "")]);
     setSaved(false);
+  }
+
+  async function addRouteCities() {
+    if (!trip?.fromPlace || !trip.toPlace) {
+      setRouteMessage("Add From and To places to this trip first.");
+      return;
+    }
+
+    setRouteLoading(true);
+    setRouteMessage("");
+    try {
+      const [from, to] = await Promise.all([geocode(trip.fromPlace), geocode(trip.toPlace)]);
+      const routeResponse = await fetch(`https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=full&geometries=geojson&steps=false`);
+      if (!routeResponse.ok) throw new Error("Unable to calculate the route.");
+      const routeData = await routeResponse.json() as { routes?: { geometry?: { coordinates: number[][] } }[] };
+      const coordinates = routeData.routes?.[0]?.geometry?.coordinates || [];
+      if (coordinates.length < 3) throw new Error("No intermediate cities were found on this route.");
+
+      const sampleIndexes = [0.2, 0.4, 0.6, 0.8].map((ratio) => Math.floor(coordinates.length * ratio));
+      const intermediateNames = (await Promise.all(sampleIndexes.map(async (index) => {
+        const [longitude, latitude] = coordinates[index];
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&lat=${latitude}&lon=${longitude}`);
+        if (!response.ok) return "";
+        const result = await response.json() as { address?: Record<string, string> };
+        const address = result.address || {};
+        return address.city || address.town || address.municipality || address.village || "";
+      }))).filter((name, index, routeNames) => name && routeNames.indexOf(name) === index && name !== trip.fromPlace && name !== trip.toPlace);
+      const names = [trip.fromPlace, ...intermediateNames, trip.toPlace];
+
+      if (!names.length) throw new Error("No named intermediate cities were found on this route.");
+      setStops((currentStops) => {
+        const existingNames = new Set(currentStops.map((stop) => stop.city.toLowerCase()));
+        const routeStops = names.filter((name) => !existingNames.has(name.toLowerCase())).map((city) => ({ id: crypto.randomUUID(), city, startDate: trip.startDate, endDate: trip.endDate, activities: [], cityCost: cityCosts[city] || 0 }));
+        return [...currentStops, ...routeStops];
+      });
+      setSaved(false);
+      setRouteMessage(`${names.length} cities found on your route. Save the itinerary to keep them.`);
+    } catch (error) {
+      setRouteMessage(error instanceof Error ? error.message : "Could not find cities on this route.");
+    } finally {
+      setRouteLoading(false);
+    }
   }
 
   function removeStop(id: string) {
@@ -88,11 +147,12 @@ export default function ItineraryBuilderPage() {
           <div className="flex flex-wrap gap-2"><Link to={`/trips/${trip?.id || tripId}/itinerary/view`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-500 hover:text-slate-950">Preview</Link><button type="button" onClick={saveItinerary} className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">{saved ? <Check size={17} /> : <Save size={17} />} {saved ? "Saved" : "Save itinerary"}</button></div>
         </div>
 
-        <div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-bold text-slate-950">Your stops</h2><p className="mt-1 text-sm text-slate-500">{stops.length} {stops.length === 1 ? "city" : "cities"} in your route</p></div><button type="button" onClick={addStop} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-500 hover:text-slate-950"><Plus size={17} /> Add stop</button></div>
+        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h2 className="text-xl font-bold text-slate-950">Your stops</h2><p className="mt-1 text-sm text-slate-500">{stops.length} {stops.length === 1 ? "city" : "cities"} in your route</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={addRouteCities} disabled={routeLoading} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-500 hover:text-slate-950 disabled:cursor-wait disabled:opacity-60">{routeLoading ? "Finding route..." : "Find cities on route"}</button><button type="button" onClick={addStop} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-500 hover:text-slate-950"><Plus size={17} /> Add stop</button></div></div>
+        {routeMessage && <p className="mb-5 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">{routeMessage}</p>}
         {stops.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><MapPin size={28} className="mx-auto text-slate-400" /><h2 className="mt-4 text-lg font-bold text-slate-950">Your route is empty</h2><p className="mt-2 text-sm text-slate-500">Add your first city to start building the journey.</p><button type="button" onClick={addStop} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white"><Plus size={17} /> Add first stop</button></div> : <div className="space-y-4">{stops.map((stop, index) => <article key={stop.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex gap-4"><div className="hidden items-start pt-2 text-slate-300 sm:flex"><GripVertical size={18} /></div><div className="min-w-0 flex-1">
             <div className="mb-5 flex items-start justify-between gap-3"><div className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-white">{index + 1}</span><h3 className="text-lg font-bold text-slate-950">Stop {index + 1}</h3></div><div className="flex items-center gap-1"><button type="button" onClick={() => moveStop(index, -1)} disabled={index === 0} aria-label="Move stop up" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-30"><ArrowUp size={17} /></button><button type="button" onClick={() => moveStop(index, 1)} disabled={index === stops.length - 1} aria-label="Move stop down" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-30"><ArrowDown size={17} /></button><button type="button" onClick={() => removeStop(stop.id)} aria-label={`Remove stop ${index + 1}`} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><X size={17} /></button></div></div>
-            <div className="grid gap-5 sm:grid-cols-3"><div><label htmlFor={`city-${stop.id}`} className="mb-2 block text-sm font-semibold text-slate-800">City</label><select id={`city-${stop.id}`} value={stop.city} onChange={(event) => updateStop(stop.id, "city", event.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10">{cities.map((city) => <option key={city}>{city}</option>)}</select></div><div><label htmlFor={`start-${stop.id}`} className="mb-2 block text-sm font-semibold text-slate-800">Arrival</label><div className="relative"><CalendarDays size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" /><input id={`start-${stop.id}`} type="date" value={stop.startDate} onChange={(event) => updateStop(stop.id, "startDate", event.target.value)} className="w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-2 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /></div></div><div><label htmlFor={`end-${stop.id}`} className="mb-2 block text-sm font-semibold text-slate-800">Departure</label><div className="relative"><CalendarDays size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" /><input id={`end-${stop.id}`} type="date" min={stop.startDate} value={stop.endDate} onChange={(event) => updateStop(stop.id, "endDate", event.target.value)} className="w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-2 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /></div></div></div>
+            <div className="grid gap-5 sm:grid-cols-3"><div><label htmlFor={`city-${stop.id}`} className="mb-2 block text-sm font-semibold text-slate-800">City</label><select id={`city-${stop.id}`} value={stop.city} onChange={(event) => updateStop(stop.id, "city", event.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10">{availableCities.map((city) => <option key={city}>{city}</option>)}</select></div><div><label htmlFor={`start-${stop.id}`} className="mb-2 block text-sm font-semibold text-slate-800">Arrival</label><div className="relative"><CalendarDays size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" /><input id={`start-${stop.id}`} type="date" value={stop.startDate} onChange={(event) => updateStop(stop.id, "startDate", event.target.value)} className="w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-2 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /></div></div><div><label htmlFor={`end-${stop.id}`} className="mb-2 block text-sm font-semibold text-slate-800">Departure</label><div className="relative"><CalendarDays size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" /><input id={`end-${stop.id}`} type="date" min={stop.startDate} value={stop.endDate} onChange={(event) => updateStop(stop.id, "endDate", event.target.value)} className="w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-2 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /></div></div></div>
             <div className="mt-6 border-t border-slate-100 pt-5"><p className="mb-3 text-sm font-semibold text-slate-800">Activities</p>{stop.activities.length > 0 && <div className="mb-3 flex flex-wrap gap-2">{stop.activities.map((activity) => <span key={activity} className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700">{activity}</span>)}</div>}<form onSubmit={(event) => addActivity(event, stop.id)} className="flex gap-2"><input value={activityDrafts[stop.id] || ""} onChange={(event) => setActivityDrafts((drafts) => ({ ...drafts, [stop.id]: event.target.value }))} placeholder="Add an activity, e.g. Visit Fushimi Inari" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /><button type="submit" className="rounded-lg border border-slate-300 px-3 text-slate-600 hover:bg-slate-100 hover:text-slate-950" aria-label="Add activity"><Plus size={17} /></button></form></div>
           </div></div>
         </article>)}</div>}

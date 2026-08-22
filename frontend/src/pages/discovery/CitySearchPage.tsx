@@ -11,6 +11,7 @@ interface City {
   popularity: string;
   description: string;
   image: string;
+  amount: number;
 }
 
 interface SavedTrip {
@@ -25,15 +26,16 @@ interface Stop {
   startDate: string;
   endDate: string;
   activities: string[];
+  cityCost?: number;
 }
 
 const cities: City[] = [
-  { id: "mumbai", name: "Mumbai", country: "Maharashtra", region: "West India", cost: "High", popularity: "98%", description: "Coastal energy, historic neighborhoods, and the city's legendary food scene.", image: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80" },
-  { id: "bengaluru", name: "Bengaluru", country: "Karnataka", region: "South India", cost: "Medium", popularity: "94%", description: "Tree-lined streets, creative neighborhoods, and a lively café culture.", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=800&q=80" },
-  { id: "jaipur", name: "Jaipur", country: "Rajasthan", region: "North India", cost: "Medium", popularity: "91%", description: "Pink-hued streets, grand forts, and craft traditions full of color.", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80" },
-  { id: "kochi", name: "Kochi", country: "Kerala", region: "South India", cost: "Low", popularity: "88%", description: "Backwaters, spice markets, and a relaxed gateway to Kerala.", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" },
-  { id: "varanasi", name: "Varanasi", country: "Uttar Pradesh", region: "North India", cost: "Low", popularity: "86%", description: "Ancient lanes, riverside ghats, and living traditions along the Ganga.", image: "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=800&q=80" },
-  { id: "guwahati", name: "Guwahati", country: "Assam", region: "Northeast India", cost: "Low", popularity: "82%", description: "A gateway to the Northeast with river views, temples, and tea country.", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80" },
+  { id: "mumbai", name: "Mumbai", country: "Maharashtra", region: "West India", cost: "High", amount: 3000, popularity: "98%", description: "Coastal energy, historic neighborhoods, and the city's legendary food scene.", image: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80" },
+  { id: "bengaluru", name: "Bengaluru", country: "Karnataka", region: "South India", cost: "Medium", amount: 2000, popularity: "94%", description: "Tree-lined streets, creative neighborhoods, and a lively café culture.", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=800&q=80" },
+  { id: "jaipur", name: "Jaipur", country: "Rajasthan", region: "North India", cost: "Medium", amount: 2000, popularity: "91%", description: "Pink-hued streets, grand forts, and craft traditions full of color.", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80" },
+  { id: "kochi", name: "Kochi", country: "Kerala", region: "South India", cost: "Low", amount: 1000, popularity: "88%", description: "Backwaters, spice markets, and a relaxed gateway to Kerala.", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" },
+  { id: "varanasi", name: "Varanasi", country: "Uttar Pradesh", region: "North India", cost: "Low", amount: 1000, popularity: "86%", description: "Ancient lanes, riverside ghats, and living traditions along the Ganga.", image: "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=800&q=80" },
+  { id: "guwahati", name: "Guwahati", country: "Assam", region: "Northeast India", cost: "Low", amount: 1000, popularity: "82%", description: "A gateway to the Northeast with river views, temples, and tea country.", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80" },
 ];
 
 export default function CitySearchPage() {
@@ -54,7 +56,7 @@ export default function CitySearchPage() {
     if (!trip) return;
     const storageKey = `globetrotter_itinerary_${trip.id}`;
     const stops = JSON.parse(localStorage.getItem(storageKey) || "[]") as Stop[];
-    stops.push({ id: crypto.randomUUID(), city: city.name, startDate: trip.startDate, endDate: trip.endDate, activities: [] });
+    stops.push({ id: crypto.randomUUID(), city: city.name, startDate: trip.startDate, endDate: trip.endDate, activities: [], cityCost: city.amount });
     localStorage.setItem(storageKey, JSON.stringify(stops));
     setAddedCities((current) => [...current, city.id]);
   }

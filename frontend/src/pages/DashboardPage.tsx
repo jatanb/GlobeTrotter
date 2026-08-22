@@ -33,6 +33,13 @@ export default function DashboardPage() {
     }
   }
 
+  const trips = JSON.parse(localStorage.getItem("globetrotter_trips") || "[]") as { id: string; name: string; budgetLimit?: number }[];
+  const trip = trips[0];
+  const stops = JSON.parse(localStorage.getItem(`globetrotter_itinerary_${trip?.id || "draft"}`) || "[]") as { cityCost?: number; activityCosts?: Record<string, number> }[];
+  const spent = stops.reduce((total, stop) => total + (stop.cityCost || 0) + Object.values(stop.activityCosts || {}).reduce((activityTotal, amount) => activityTotal + amount, 0), 0);
+  const budgetLimit = trip?.budgetLimit || 0;
+  const budgetProgress = budgetLimit ? Math.min((spent / budgetLimit) * 100, 100) : 0;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -68,10 +75,10 @@ export default function DashboardPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><CircleDollarSign size={21} /></div>
               <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">On track</span>
             </div>
-            <p className="mt-7 text-sm font-medium text-slate-500">Kerala trip budget</p>
-            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">₹1,24,000</p>
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-[62%] rounded-full bg-emerald-500" /></div>
-            <div className="mt-2 flex justify-between text-xs text-slate-500"><span>₹77,000 spent</span><span>₹1,24,000 limit</span></div>
+            <p className="mt-7 text-sm font-medium text-slate-500">{trip?.name || "Trip budget"}</p>
+            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">₹{budgetLimit.toLocaleString("en-IN")}</p>
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${budgetProgress}%` }} /></div>
+            <div className="mt-2 flex justify-between text-xs text-slate-500"><span>₹{spent.toLocaleString("en-IN")} spent</span><span>₹{budgetLimit.toLocaleString("en-IN")} limit</span></div>
           </div>
         </section>
 

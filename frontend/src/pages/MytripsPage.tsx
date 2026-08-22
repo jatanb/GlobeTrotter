@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 interface SavedTrip {
   id: string;
   name: string;
+  fromPlace?: string;
+  toPlace?: string;
   startDate: string;
   endDate: string;
   description: string;
@@ -60,7 +62,7 @@ export default function MyTripsPage() {
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><MapPin size={22} /></div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-3"><h2 className="text-xl font-bold text-slate-950">{trip.name}</h2><span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Draft</span></div>
-                        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500"><span className="inline-flex items-center gap-2"><CalendarDays size={16} /> {formatDate(trip.startDate)} - {formatDate(trip.endDate)}</span><span className="inline-flex items-center gap-2"><MapPin size={16} /> {trip.destinationCount || 0} destinations</span></div>
+                        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500"><span className="inline-flex items-center gap-2"><MapPin size={16} /> {trip.fromPlace || "Starting point"} to {trip.toPlace || "Destination"}</span><span className="inline-flex items-center gap-2"><CalendarDays size={16} /> {formatDate(trip.startDate)} - {formatDate(trip.endDate)}</span><span className="inline-flex items-center gap-2"><MapPin size={16} /> {trip.destinationCount || 0} destinations</span></div>
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 border-t border-slate-100 pt-3 sm:border-0 sm:pt-0">

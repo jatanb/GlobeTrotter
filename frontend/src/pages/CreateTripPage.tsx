@@ -6,9 +6,12 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 interface SavedTrip {
   id: string;
   name: string;
+  fromPlace: string;
+  toPlace: string;
   startDate: string;
   endDate: string;
   description: string;
+  budgetLimit: number;
   coverName?: string;
 }
 
@@ -17,9 +20,12 @@ export default function CreateTripPage() {
   const [searchParams] = useSearchParams();
   const editingId = searchParams.get("edit");
   const [name, setName] = useState("");
+  const [fromPlace, setFromPlace] = useState("");
+  const [toPlace, setToPlace] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [description, setDescription] = useState("");
+  const [budgetLimit, setBudgetLimit] = useState("0");
   const [cover, setCover] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState("");
   const [error, setError] = useState("");
@@ -33,9 +39,12 @@ export default function CreateTripPage() {
     const trip = savedTrips.find((savedTrip) => savedTrip.id === editingId);
     if (trip) {
       setName(trip.name);
+      setFromPlace(trip.fromPlace || "");
+      setToPlace(trip.toPlace || "");
       setStartDate(trip.startDate);
       setEndDate(trip.endDate);
       setDescription(trip.description);
+      setBudgetLimit(String(trip.budgetLimit || 0));
     }
   }, [editingId]);
 
@@ -67,9 +76,12 @@ export default function CreateTripPage() {
     const savedTrip = {
       id: crypto.randomUUID(),
       name: name.trim(),
+      fromPlace: fromPlace.trim(),
+      toPlace: toPlace.trim(),
       startDate,
       endDate,
       description: description.trim(),
+      budgetLimit: Number(budgetLimit) || 0,
       coverName: cover?.name,
     };
     const updatedTrips = editingId
@@ -104,6 +116,17 @@ export default function CreateTripPage() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
+                  <label htmlFor="from-place" className="mb-2 block text-sm font-semibold text-slate-800">From</label>
+                  <input id="from-place" type="text" required value={fromPlace} onChange={(event) => setFromPlace(event.target.value)} placeholder="Starting place" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+                </div>
+                <div>
+                  <label htmlFor="to-place" className="mb-2 block text-sm font-semibold text-slate-800">To</label>
+                  <input id="to-place" type="text" required value={toPlace} onChange={(event) => setToPlace(event.target.value)} placeholder="Final destination" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
                   <label htmlFor="start-date" className="mb-2 block text-sm font-semibold text-slate-800">Start date</label>
                   <div className="relative"><CalendarDays size={17} className="pointer-events-none absolute left-3 top-3 text-slate-400" /><input id="start-date" type="date" required value={startDate} onChange={(event) => setStartDate(event.target.value)} className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 outline-none transition focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /></div>
                 </div>
@@ -116,6 +139,11 @@ export default function CreateTripPage() {
               <div>
                 <label htmlFor="trip-description" className="mb-2 block text-sm font-semibold text-slate-800">Trip description <span className="font-normal text-slate-400">(optional)</span></label>
                 <textarea id="trip-description" rows={6} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What do you want to see, do, or remember?" className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+              </div>
+
+              <div>
+                <label htmlFor="trip-budget" className="mb-2 block text-sm font-semibold text-slate-800">Budget limit</label>
+                <input id="trip-budget" type="number" min="0" step="1" value={budgetLimit} onChange={(event) => setBudgetLimit(event.target.value)} placeholder="0" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
               </div>
             </div>
           </div>

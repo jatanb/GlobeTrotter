@@ -11,21 +11,23 @@ interface Activity {
   duration: string;
   description: string;
   image: string;
+  amount: number;
 }
 
 interface Stop {
   id: string;
   city: string;
   activities: string[];
+  activityCosts?: Record<string, number>;
 }
 
 const activities: Activity[] = [
-  { id: "street-food", name: "Mumbai street-food walk", city: "Mumbai", type: "Food", cost: "₹₹", duration: "3 hours", description: "Taste iconic local snacks and learn the stories behind Mumbai's favorite flavors.", image: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?auto=format&fit=crop&w=800&q=80" },
-  { id: "forts", name: "Jaipur forts and bazaars", city: "Jaipur", type: "Sightseeing", cost: "₹", duration: "4 hours", description: "Explore royal courtyards, colorful markets, and the old city's pink streets.", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80" },
-  { id: "backwaters", name: "Alleppey backwater cruise", city: "Kochi", type: "Adventure", cost: "₹₹₹", duration: "2.5 hours", description: "Glide through Kerala's quiet waterways aboard a traditional houseboat.", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" },
-  { id: "tea", name: "Munnar tea estate tour", city: "Munnar", type: "Sightseeing", cost: "₹₹", duration: "4 hours", description: "Walk among misty tea gardens and discover how Kerala's famous tea is made.", image: "https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=800&q=80" },
-  { id: "ghats", name: "Varanasi sunrise boat ride", city: "Varanasi", type: "Sightseeing", cost: "₹₹", duration: "2 hours", description: "Watch the city wake along the Ganga from a peaceful early-morning boat.", image: "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=800&q=80" },
-  { id: "hills", name: "Shillong waterfall trail", city: "Shillong", type: "Adventure", cost: "₹", duration: "5 hours", description: "Follow a forest trail to dramatic waterfalls and wide views across Meghalaya.", image: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80" },
+  { id: "street-food", name: "Mumbai street-food walk", city: "Mumbai", type: "Food", cost: "₹₹", amount: 1500, duration: "3 hours", description: "Taste iconic local snacks and learn the stories behind Mumbai's favorite flavors.", image: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?auto=format&fit=crop&w=800&q=80" },
+  { id: "forts", name: "Jaipur forts and bazaars", city: "Jaipur", type: "Sightseeing", cost: "₹", amount: 500, duration: "4 hours", description: "Explore royal courtyards, colorful markets, and the old city's pink streets.", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80" },
+  { id: "backwaters", name: "Alleppey backwater cruise", city: "Kochi", type: "Adventure", cost: "₹₹₹", amount: 3000, duration: "2.5 hours", description: "Glide through Kerala's quiet waterways aboard a traditional houseboat.", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" },
+  { id: "tea", name: "Munnar tea estate tour", city: "Munnar", type: "Sightseeing", cost: "₹₹", amount: 1500, duration: "4 hours", description: "Walk among misty tea gardens and discover how Kerala's famous tea is made.", image: "https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=800&q=80" },
+  { id: "ghats", name: "Varanasi sunrise boat ride", city: "Varanasi", type: "Sightseeing", cost: "₹₹", amount: 1500, duration: "2 hours", description: "Watch the city wake along the Ganga from a peaceful early-morning boat.", image: "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=800&q=80" },
+  { id: "hills", name: "Shillong waterfall trail", city: "Shillong", type: "Adventure", cost: "₹", amount: 500, duration: "5 hours", description: "Follow a forest trail to dramatic waterfalls and wide views across Meghalaya.", image: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80" },
 ];
 
 export default function ActivitySearchPage() {
@@ -53,6 +55,12 @@ export default function ActivitySearchPage() {
     if (!targetStop) return;
     const alreadyAdded = targetStop.activities.includes(activity.name);
     targetStop.activities = alreadyAdded ? targetStop.activities.filter((item) => item !== activity.name) : [...targetStop.activities, activity.name];
+    targetStop.activityCosts = { ...(targetStop.activityCosts || {}) };
+    if (alreadyAdded) {
+      delete targetStop.activityCosts[activity.name];
+    } else {
+      targetStop.activityCosts[activity.name] = activity.amount;
+    }
     localStorage.setItem(storageKey, JSON.stringify(stops));
     setAdded((current) => alreadyAdded ? current.filter((id) => id !== activity.id) : [...current, activity.id]);
   }

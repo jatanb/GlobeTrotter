@@ -8,6 +8,7 @@ interface Stop {
   startDate: string;
   endDate: string;
   activities: string[];
+  activityCosts?: Record<string, number>;
 }
 interface Trip { id: string; name: string; }
 
@@ -34,7 +35,12 @@ export default function CalendarPage() {
   }
 
   function removeActivity(stopId: string, activity: string) {
-    persist(stops.map((stop) => stop.id === stopId ? { ...stop, activities: stop.activities.filter((item) => item !== activity) } : stop));
+    persist(stops.map((stop) => {
+      if (stop.id !== stopId) return stop;
+      const activityCosts = { ...(stop.activityCosts || {}) };
+      delete activityCosts[activity];
+      return { ...stop, activities: stop.activities.filter((item) => item !== activity), activityCosts };
+    }));
   }
 
   function dropActivity(targetStopId: string, targetActivity: string) {
