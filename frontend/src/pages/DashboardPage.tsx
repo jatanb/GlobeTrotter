@@ -11,14 +11,14 @@ import {
 import { Link } from "react-router-dom";
 
 const recentTrips = [
-  { name: "Japan in Spring", route: "Tokyo - Kyoto - Osaka", dates: "Apr 12 - Apr 24, 2026", status: "Planning", color: "bg-rose-100 text-rose-700" },
-  { name: "A weekend in Lisbon", route: "Lisbon - Sintra", dates: "Jun 06 - Jun 09, 2026", status: "Draft", color: "bg-amber-100 text-amber-700" },
+  { name: "Kerala in Monsoon", route: "Kochi - Munnar - Alleppey", dates: "Jul 12 - Jul 24, 2026", status: "Planning", color: "bg-rose-100 text-rose-700" },
+  { name: "A weekend in Rajasthan", route: "Jaipur - Pushkar", dates: "Sep 06 - Sep 09, 2026", status: "Draft", color: "bg-amber-100 text-amber-700" },
 ];
 
 const destinations = [
-  { city: "Kyoto", country: "Japan", detail: "Culture and calm", color: "bg-red-100" },
-  { city: "Lisbon", country: "Portugal", detail: "Coastal city breaks", color: "bg-sky-100" },
-  { city: "Marrakech", country: "Morocco", detail: "Markets and color", color: "bg-orange-100" },
+  { city: "Udaipur", country: "Rajasthan", detail: "Lakes and palaces", color: "bg-red-100" },
+  { city: "Shillong", country: "Meghalaya", detail: "Hills and waterfalls", color: "bg-sky-100" },
+  { city: "Varanasi", country: "Uttar Pradesh", detail: "Heritage by the Ganga", color: "bg-orange-100" },
 ];
 
 export default function DashboardPage() {
@@ -52,10 +52,10 @@ export default function DashboardPage() {
             <div className="relative z-10 max-w-lg">
               <div className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-300"><Plane size={16} /> Next on your calendar</div>
               <p className="text-sm text-slate-400">12 days from now</p>
-              <h2 className="mt-1 text-2xl font-bold">Japan in Spring</h2>
+              <h2 className="mt-1 text-2xl font-bold">Kerala in Monsoon</h2>
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-300">
-                <span className="inline-flex items-center gap-2"><MapPin size={15} /> Tokyo, Kyoto, Osaka</span>
-                <span className="inline-flex items-center gap-2"><CalendarDays size={15} /> Apr 12 - Apr 24</span>
+                <span className="inline-flex items-center gap-2"><MapPin size={15} /> Kochi, Munnar, Alleppey</span>
+                <span className="inline-flex items-center gap-2"><CalendarDays size={15} /> Jul 12 - Jul 24</span>
               </div>
               <Link to="/trips" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-slate-300">Open itinerary <ArrowRight size={16} /></Link>
             </div>
@@ -68,10 +68,10 @@ export default function DashboardPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><CircleDollarSign size={21} /></div>
               <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">On track</span>
             </div>
-            <p className="mt-7 text-sm font-medium text-slate-500">Japan trip budget</p>
-            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">$2,480</p>
+            <p className="mt-7 text-sm font-medium text-slate-500">Kerala trip budget</p>
+            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">₹1,24,000</p>
             <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-[62%] rounded-full bg-emerald-500" /></div>
-            <div className="mt-2 flex justify-between text-xs text-slate-500"><span>$1,540 spent</span><span>$2,480 limit</span></div>
+            <div className="mt-2 flex justify-between text-xs text-slate-500"><span>₹77,000 spent</span><span>₹1,24,000 limit</span></div>
           </div>
         </section>
 

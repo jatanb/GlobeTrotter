@@ -11,7 +11,7 @@ const initialUsers: AdminUser[] = [
   { id: 4, name: "Sofia Martin", email: "sofia@example.com", trips: 11, status: "Active", joined: "Jun 2026" },
 ];
 
-const cityStats = [{ label: "Tokyo", value: 82 }, { label: "Lisbon", value: 68 }, { label: "Kyoto", value: 61 }, { label: "Paris", value: 54 }, { label: "Marrakech", value: 43 }];
+const cityStats = [{ label: "Mumbai", value: 82 }, { label: "Jaipur", value: 68 }, { label: "Kochi", value: 61 }, { label: "Varanasi", value: 54 }, { label: "Shillong", value: 43 }];
 const activityStats = [{ label: "Sightseeing", value: 74, color: "bg-sky-500" }, { label: "Food tours", value: 58, color: "bg-amber-500" }, { label: "Adventure", value: 46, color: "bg-emerald-500" }];
 
 export default function AdminDashboardPage() {

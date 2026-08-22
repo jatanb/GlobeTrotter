@@ -2,16 +2,37 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, KeyRound, Send } from "lucide-react";
 import { Link } from "react-router-dom";
+import { apiRequest } from "../../api/client";
 
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [developmentUrl, setDevelopmentUrl] = useState("");
 
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await apiRequest<{ message: string; development_reset_url?: string }>(
+        "/auth/forgot-password",
+        {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        },
+      );
+      setDevelopmentUrl(response.development_reset_url || "");
+      setSubmitted(true);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to send reset instructions");
+    } finally {
+      setLoading(false);
+    }
   }
 
 
@@ -38,10 +59,12 @@ export default function ForgotPasswordPage() {
         >
           {submitted ? (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-              If an account exists for <strong>{email}</strong>, reset instructions will be sent shortly.
+              If an account exists for <strong>{email}</strong>, reset instructions have been prepared.
+              {developmentUrl && <p className="mt-3 break-all text-xs text-emerald-900">Local reset link: {developmentUrl}</p>}
             </div>
           ) : (
             <>
+              {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
               <label
                 htmlFor="reset-email"
                 className="mb-2 block text-sm font-medium text-slate-700"
@@ -61,10 +84,11 @@ export default function ForgotPasswordPage() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 font-semibold text-white transition hover:bg-slate-800"
               >
-                Send reset link
-                <Send size={17} />
+                {loading ? "Sending..." : "Send reset link"}
+                {!loading && <Send size={17} />}
               </button>
             </>
           )}

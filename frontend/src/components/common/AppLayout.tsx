@@ -1,9 +1,11 @@
-import { Map, Plus, Plane, Compass, Search, Wallet, CalendarDays, UserRound, ShieldCheck } from "lucide-react";
+import { Map, Plus, Plane, Compass, Search, Wallet, CalendarDays, UserRound, ShieldCheck, Menu, X } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 
 export default function AppLayout() {
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
   const storedUser = localStorage.getItem("globetrotter_user");
   const isAdmin = storedUser ? (JSON.parse(storedUser) as { is_admin?: boolean }).is_admin : false;
 
@@ -68,8 +70,9 @@ export default function AppLayout() {
             {navigation.map((item) => {
               const Icon = item.icon;
 
-              const active =
-                location.pathname === item.path;
+              const active = item.path === "/"
+                ? location.pathname === "/"
+                : location.pathname.startsWith(item.path);
 
               return (
                 <Link
@@ -104,8 +107,16 @@ export default function AppLayout() {
             <UserRound size={19} />
           </Link>
           {isAdmin && <Link to="/admin" aria-label="Open admin dashboard" className="ml-1 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950"><ShieldCheck size={19} /></Link>}
+          <button type="button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle navigation menu" aria-expanded={menuOpen} className="ml-1 rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden">
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
 
         </div>
+
+        {menuOpen && <nav className="border-t border-slate-100 bg-white px-4 py-3 md:hidden sm:px-6">
+          {navigation.map((item) => { const Icon = item.icon; const active = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path); return <Link key={item.path} to={item.path} onClick={() => setMenuOpen(false)} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold ${active ? "bg-slate-100 text-slate-950" : "text-slate-600 hover:bg-slate-50"}`}><Icon size={17} /> {item.label}</Link>; })}
+          {isAdmin && <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"><ShieldCheck size={17} /> Admin</Link>}
+        </nav>}
 
       </header>
 

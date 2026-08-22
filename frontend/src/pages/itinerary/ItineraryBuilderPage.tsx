@@ -18,10 +18,10 @@ interface SavedTrip {
   endDate: string;
 }
 
-const cities = ["Tokyo", "Kyoto", "Osaka", "Lisbon", "Sintra", "Marrakech", "Paris", "Barcelona", "New York"];
+const cities = ["Mumbai", "Bengaluru", "Jaipur", "Kochi", "Munnar", "Varanasi", "Udaipur", "Shillong", "Guwahati"];
 
 function createStop(startDate: string, endDate: string): Stop {
-  return { id: crypto.randomUUID(), city: "Tokyo", startDate, endDate, activities: [] };
+  return { id: crypto.randomUUID(), city: "Mumbai", startDate, endDate, activities: [] };
 }
 
 export default function ItineraryBuilderPage() {
@@ -96,7 +96,8 @@ export default function ItineraryBuilderPage() {
             <div className="mt-6 border-t border-slate-100 pt-5"><p className="mb-3 text-sm font-semibold text-slate-800">Activities</p>{stop.activities.length > 0 && <div className="mb-3 flex flex-wrap gap-2">{stop.activities.map((activity) => <span key={activity} className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700">{activity}</span>)}</div>}<form onSubmit={(event) => addActivity(event, stop.id)} className="flex gap-2"><input value={activityDrafts[stop.id] || ""} onChange={(event) => setActivityDrafts((drafts) => ({ ...drafts, [stop.id]: event.target.value }))} placeholder="Add an activity, e.g. Visit Fushimi Inari" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" /><button type="submit" className="rounded-lg border border-slate-300 px-3 text-slate-600 hover:bg-slate-100 hover:text-slate-950" aria-label="Add activity"><Plus size={17} /></button></form></div>
           </div></div>
         </article>)}</div>}
-+      </div>
-+    </div>
+      </div>
+    </div>
   );
 }
+

@@ -48,3 +48,13 @@ class User(Base):
         default=datetime.utcnow,
         nullable=False,
     )
+
+    password_reset_token: Mapped[str | None] = mapped_column(
+        String(128),
+        nullable=True,
+    )
+
+    password_reset_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+    )

@@ -9,6 +9,13 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./globetrotter.db"
 
     frontend_url: str = "http://localhost:5173"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_use_tls: bool = True
+    password_reset_url: str = "http://localhost:5174/reset-password"
 
     jwt_secret_key: str = "CHANGE_THIS_IN_PRODUCTION"
     jwt_algorithm: str = "HS256"

@@ -99,7 +99,7 @@ export default function CreateTripPage() {
             <div className="space-y-6">
               <div>
                 <label htmlFor="trip-name" className="mb-2 block text-sm font-semibold text-slate-800">Trip name</label>
-                <input id="trip-name" type="text" required minLength={2} value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Japan in Spring" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
+                <input id="trip-name" type="text" required minLength={2} value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Kerala in Monsoon" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10" />
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
