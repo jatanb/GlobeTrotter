@@ -6,3 +6,4 @@ pypdf
 edge-tts
 python-dotenv
 cartesia
+python-multipart

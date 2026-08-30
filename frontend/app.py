@@ -31,23 +31,29 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Upload Blueprint Reference Textbooks (Optional PDF)", type=["pdf"])
     
     if st.button("🚀 Initialize Virtual Classroom Engine", use_container_width=True):
-        # Save file locally if uploaded
-        file_path = None
-        if uploaded_file:
-            file_path = os.path.join("temp_uploaded.pdf")
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-        
-        payload = {
+    # Form data dictionary for non-file text parameters
+        form_data = {
             "topic": topic,
             "proficiency": proficiency,
-            "time_limit": time_limit,
-            "language": language,
-            "file_path": file_path
+            "time_limit": str(time_limit), # Form variables travel across network as strings
+            "language": language
         }
         
+        files_payload = None
+        if uploaded_file:
+            # Pull the binary stream directly from the browser memory cache
+            files_payload = {
+                "file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")
+            }
+        
         with st.spinner("Orchestrator constructing custom adaptive modular syllabus..."):
-            res = requests.post(f"{BACKEND_URL}/api/lesson/init", json=payload)
+            # Real-world apps use requests.post with 'data' (Form) and 'files' (Multipart Stream)
+            res = requests.post(
+                f"{BACKEND_URL}/api/lesson/init", 
+                data=form_data, 
+                files=files_payload
+            )
+            
             if res.status_code == 200:
                 data = res.json()
                 st.session_state.state_matrix = data["updated_state"]
@@ -59,6 +65,7 @@ with st.sidebar:
                 st.success("Virtual Environment Synchronized!")
             else:
                 st.error("Engine failure connecting to cloud intelligence server pipeline.")
+
 
 # Main Interactive Split Dashboard Screen Execution Layout
 col1, col2 = st.columns([1, 1.2])
